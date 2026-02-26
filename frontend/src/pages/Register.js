@@ -43,7 +43,12 @@ const Register = () => {
       toast.success('Registration successful!');
       navigate('/');
     } else {
-      toast.error(result.message);
+      // Show field-level errors if present, otherwise show the main message
+      if (result.errors && result.errors.length > 0) {
+        result.errors.forEach(err => toast.error(`${err.field}: ${err.message}`));
+      } else {
+        toast.error(result.message);
+      }
     }
   };
 

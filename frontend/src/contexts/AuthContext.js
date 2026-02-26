@@ -1,24 +1,13 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import axios from 'axios';
+import { authService } from '../services/authService';
 
 const AuthContext = createContext(null);
-
-const API_URL = 'http://localhost:5000/api';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [accessToken, setAccessToken] = useState(localStorage.getItem('accessToken'));
   const [refreshToken, setRefreshToken] = useState(localStorage.getItem('refreshToken'));
-
-  // Configure axios defaults
-  useEffect(() => {
-    if (accessToken) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-    } else {
-      delete axios.defaults.headers.common['Authorization'];
-    }
-  }, [accessToken]);
 
   // Load user on mount if token exists
   useEffect(() => {
@@ -33,15 +22,13 @@ export const AuthProvider = ({ children }) => {
   // Load user profile
   const loadUser = async () => {
     try {
-      const response = await axios.get(`${API_URL}/auth/me`);
+      const response = await authService.getMe();
       setUser(response.data.data.user);
     } catch (error) {
       console.error('Load user error:', error);
       if (error.response?.data?.code === 'TOKEN_EXPIRED') {
-        // Try to refresh token
         await handleRefreshToken();
       } else {
-        // Clear invalid token
         logout();
       }
     } finally {
@@ -52,7 +39,7 @@ export const AuthProvider = ({ children }) => {
   // Register user
   const register = async (userData) => {
     try {
-      const response = await axios.post(`${API_URL}/auth/register`, userData);
+      const response = await authService.register(userData);
       const { user, accessToken, refreshToken } = response.data.data;
 
       // Store tokens
@@ -67,7 +54,8 @@ export const AuthProvider = ({ children }) => {
       console.error('Register error:', error);
       return {
         success: false,
-        message: error.response?.data?.message || 'Registration failed'
+        message: error.response?.data?.message || 'Registration failed',
+        errors: error.response?.data?.errors
       };
     }
   };
@@ -75,10 +63,7 @@ export const AuthProvider = ({ children }) => {
   // Login user
   const login = async (email, password) => {
     try {
-      const response = await axios.post(`${API_URL}/auth/login`, {
-        email,
-        password
-      });
+      const response = await authService.login({ email, password });
       const { user, accessToken, refreshToken } = response.data.data;
 
       // Store tokens
@@ -101,19 +86,18 @@ export const AuthProvider = ({ children }) => {
   // Logout user
   const logout = async () => {
     try {
-      if (refreshToken) {
-        await axios.post(`${API_URL}/auth/logout`, { refreshToken });
+      const currentRefreshToken = localStorage.getItem('refreshToken');
+      if (currentRefreshToken) {
+        await authService.logout(currentRefreshToken);
       }
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      // Clear tokens and user
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
       setAccessToken(null);
       setRefreshToken(null);
       setUser(null);
-      delete axios.defaults.headers.common['Authorization'];
     }
   };
 
@@ -121,25 +105,16 @@ export const AuthProvider = ({ children }) => {
   const handleRefreshToken = async () => {
     try {
       const currentRefreshToken = localStorage.getItem('refreshToken');
-      
-      if (!currentRefreshToken) {
-        logout();
-        return;
-      }
+      if (!currentRefreshToken) { logout(); return; }
 
-      const response = await axios.post(`${API_URL}/auth/refresh`, {
-        refreshToken: currentRefreshToken
-      });
-      
+      const response = await authService.refreshToken(currentRefreshToken);
       const { accessToken, refreshToken: newRefreshToken } = response.data.data;
 
-      // Store new tokens
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('refreshToken', newRefreshToken);
       setAccessToken(accessToken);
       setRefreshToken(newRefreshToken);
 
-      // Reload user
       await loadUser();
     } catch (error) {
       console.error('Refresh token error:', error);
