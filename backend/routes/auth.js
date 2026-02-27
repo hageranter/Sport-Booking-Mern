@@ -16,12 +16,64 @@ const {
  * @desc    Register a new user
  * @access  Public
  */
+/**
+ * @openapi
+ * /api/auth/register:
+ *   post:
+ *     tags:
+ *       - Auth
+ *     summary: Register a new user
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *             required: [email, password]
+ *     responses:
+ *       '201':
+ *         description: Created
+ *       '400':
+ *         description: Bad request
+ */
 router.post('/register', registerValidation, validate, authController.register);
 
 /**
  * @route   POST /api/auth/login
  * @desc    Login user
  * @access  Public
+ */
+/**
+ * @openapi
+ * /api/auth/login:
+ *   post:
+ *     tags:
+ *       - Auth
+ *     summary: Login user
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *             required: [email, password]
+ *     responses:
+ *       '200':
+ *         description: OK
+ *       '401':
+ *         description: Unauthorized
  */
 router.post('/login', loginValidation, validate, authController.login);
 
@@ -57,6 +109,21 @@ router.post('/reset-password', resetPasswordValidation, validate, authController
  * @route   GET /api/auth/me
  * @desc    Get current user profile
  * @access  Private
+ */
+/**
+ * @openapi
+ * /api/auth/me:
+ *   get:
+ *     tags:
+ *       - Auth
+ *     summary: Get current user profile
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: OK
+ *       '401':
+ *         description: Unauthorized
  */
 router.get('/me', authMiddleware, authController.getMe);
 
