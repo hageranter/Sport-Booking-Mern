@@ -73,12 +73,15 @@ app.get('/health', (req, res) => {
 
 // API Routes (will be added)
 app.use('/api/auth', require('./routes/auth'));
-// app.use('/api/users', require('./routes/users'));
-// app.use('/api/courts', require('./routes/courts'));
-// app.use('/api/bookings', require('./routes/bookings'));
-// app.use('/api/matches', require('./routes/matches'));
-// app.use('/api/notifications', require('./routes/notifications'));
-// app.use('/api/payments', require('./routes/payments'));
+app.use('/api/users', require('./routes/users'));
+app.use('/api/owners', require('./routes/owners'));
+app.use('/api/courts', require('./routes/courts'));
+app.use('/api/bookings', require('./routes/bookings'));
+app.use('/api/sport-types', require('./routes/sportTypes'));
+app.use('/api/matches', require('./routes/matches'));
+app.use('/api/payments', require('./routes/payments'));
+
+app.use('/api/notifications', require('./routes/notifications'));
 // app.use('/api/reviews', require('./routes/reviews'));
 
 // 404 Handler
@@ -109,10 +112,11 @@ const server = app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT} in ${config.NODE_ENV} mode`);
 });
 
-// WebSocket Setup (will be configured later)
-// const WebSocket = require('ws');
-// const wss = new WebSocket.Server({ server });
-// require('./config/websocket')(wss);
+// ===== WebSocket Setup =====
+// using `ws` package and a separate config module for real-time notifications
+const WebSocket = require('ws');
+const wss = new WebSocket.Server({ server });
+require('./config/websocket')(wss);
 
 // Graceful Shutdown
 process.on('SIGTERM', () => {

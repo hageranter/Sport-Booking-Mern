@@ -11,5 +11,6 @@ module.exports = {
   Review: require('./Review'),
   Notification: require('./Notification'),
   NotificationSettings: require('./NotificationSettings'),
-  SearchHistory: require('./SearchHistory')
+  SearchHistory: require('./SearchHistory'),
+  Owner: require('./Owner')
 };
