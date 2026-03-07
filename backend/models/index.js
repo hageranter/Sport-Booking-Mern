@@ -6,6 +6,7 @@ module.exports = {
   SportType: require('./SportType'),
   Booking: require('./Booking'),
   Match: require('./Match'),
+  Tournament: require('./Tournament'),
   Payment: require('./Payment'),
   ChatMessage: require('./ChatMessage'),
   Review: require('./Review'),

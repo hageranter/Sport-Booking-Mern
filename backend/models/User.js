@@ -78,6 +78,21 @@ const UserSchema = new mongoose.Schema({
   passwordResetExpires: {
     type: Date,
     default: null
+  },
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true,
+    default: null
+  },
+  googleEmail: {
+    type: String,
+    default: null
+  },
+  socialLoginProvider: {
+    type: String,
+    enum: ['email', 'google'],
+    default: 'email'
   }
 }, {
   timestamps: true
@@ -86,12 +101,12 @@ const UserSchema = new mongoose.Schema({
 // Additional index for role queries (email & phoneNumber indexed via unique:true)
 UserSchema.index({ role: 1 });
 
-// Hash password before saving
-UserSchema.pre('save', async function(next) {
-  if (!this.isModified('passwordHash')) {
+// Hash password before saving (only for email-based auth)
+UserSchema.pre('save', async function (next) {
+  if (!this.isModified('passwordHash') || !this.passwordHash) {
     return next();
   }
-  
+
   try {
     const salt = await bcrypt.genSalt(10);
     this.passwordHash = await bcrypt.hash(this.passwordHash, salt);
@@ -102,36 +117,36 @@ UserSchema.pre('save', async function(next) {
 });
 
 // Method to compare password
-UserSchema.methods.comparePassword = async function(candidatePassword) {
+UserSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.passwordHash);
 };
 
 // Method to add refresh token
-UserSchema.methods.addRefreshToken = function(token, expiresIn) {
+UserSchema.methods.addRefreshToken = function (token, expiresIn) {
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + expiresIn);
-  
+
   this.refreshTokens.push({
     token,
     expiresAt
   });
-  
+
   // Keep only last 5 refresh tokens
   if (this.refreshTokens.length > 5) {
     this.refreshTokens = this.refreshTokens.slice(-5);
   }
-  
+
   return this.save();
 };
 
 // Method to remove refresh token
-UserSchema.methods.removeRefreshToken = function(token) {
+UserSchema.methods.removeRefreshToken = function (token) {
   this.refreshTokens = this.refreshTokens.filter(rt => rt.token !== token);
   return this.save();
 };
 
 // Remove password from JSON responses
-UserSchema.methods.toJSON = function() {
+UserSchema.methods.toJSON = function () {
   const user = this.toObject();
   delete user.passwordHash;
   delete user.refreshTokens;

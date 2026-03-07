@@ -21,7 +21,7 @@ const {
  *     tags:
  *       - Payments
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -81,7 +81,7 @@ router.post('/', authMiddleware, createPayment);
  *     tags:
  *       - Payments
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: page
@@ -136,7 +136,7 @@ router.get('/', authMiddleware, getAllPayments);
  *     tags:
  *       - Payments
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -174,7 +174,7 @@ router.get('/:id', authMiddleware, getPaymentById);
  *     tags:
  *       - Payments
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -231,7 +231,7 @@ router.put('/:id', authMiddleware, requireRole('Admin'), updatePayment);
  *     tags:
  *       - Payments
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -271,7 +271,7 @@ router.delete('/:id', authMiddleware, deletePayment);
  *     tags:
  *       - Payments
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -321,7 +321,7 @@ router.post('/:id/complete', authMiddleware, completePayment);
  *     tags:
  *       - Payments
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
