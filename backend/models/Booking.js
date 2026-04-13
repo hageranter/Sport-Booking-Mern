@@ -23,6 +23,30 @@ const BookingSchema = new mongoose.Schema({
     type: Number, // in minutes
     required: false // Auto-calculated in pre-save hook
   },
+  timeSlotId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'TimeSlot',
+    default: null
+  },
+  basePrice: {
+    type: Number,
+    required: [true, 'Base price is required'],
+    min: [0, 'Price cannot be negative']
+  },
+  priceMultiplier: {
+    type: Number,
+    default: 1.0,
+    min: 1.0
+  },
+  demandLevel: {
+    type: String,
+    enum: ['Low', 'Medium', 'High'],
+    default: 'Low'
+  },
+  isPeakTime: {
+    type: Boolean,
+    default: false
+  },
   totalPrice: {
     type: Number,
     required: [true, 'Total price is required'],
@@ -33,10 +57,11 @@ const BookingSchema = new mongoose.Schema({
     enum: ['EGP', 'USD', 'EUR'],
     default: 'EGP'
   },
+  // Status lifecycle (algorithm 3): Created → Reserved → Paid → Completed | Cancelled
   status: {
     type: String,
-    enum: ['Pending', 'Confirmed', 'Cancelled', 'Completed'],
-    default: 'Pending'
+    enum: ['Created', 'Reserved', 'Paid', 'Completed', 'Cancelled'],
+    default: 'Created'
   },
   paymentId: {
     type: mongoose.Schema.Types.ObjectId,

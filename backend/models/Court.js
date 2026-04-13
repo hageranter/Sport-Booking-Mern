@@ -21,7 +21,7 @@ const CourtSchema = new mongoose.Schema({
   },
   sportType: {
     type: String,
-    enum: ['Football', 'Tennis', 'Basketball', 'Paddle'],
+    enum: ['Football', 'Tennis', 'Basketball', 'Paddle', 'Volleyball', 'Squash', 'Badminton'],
     required: [true, 'Sport type is required']
   },
   location: {
@@ -96,6 +96,15 @@ const CourtSchema = new mongoose.Schema({
   availableDays: [{
     type: String,
     enum: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  }],
+  slotDurationMinutes: {
+    type: Number,
+    default: 60,
+    min: [30, 'Slot duration must be at least 30 minutes'],
+    max: [240, 'Slot duration cannot exceed 240 minutes']
+  },
+  peakHours: [{
+    type: String // e.g. ['17:00', '18:00', '19:00', '20:00', '21:00']
   }],
   isActive: {
     type: Boolean,

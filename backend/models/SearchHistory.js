@@ -19,7 +19,7 @@ const SearchHistorySchema = new mongoose.Schema({
   filters: {
     sportType: {
       type: String,
-      enum: ['Football', 'Tennis', 'Basketball', 'Paddle', null],
+      enum: ['Football', 'Tennis', 'Basketball', 'Paddle', 'Volleyball', 'Squash', 'Badminton', null],
       default: null
     },
     city: {

@@ -115,8 +115,7 @@ const NotificationSettingsSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Index
-NotificationSettingsSchema.index({ userId: 1 });
+// Index (userId already indexed via unique:true)
 
 // Method to check if notification type is enabled
 NotificationSettingsSchema.methods.isEnabled = function(type, category) {

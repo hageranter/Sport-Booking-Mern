@@ -1,6 +1,16 @@
 const mongoose = require('mongoose');
 
 const MatchSchema = new mongoose.Schema({
+  tournamentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Tournament',
+    default: null
+  },
+  sportType: {
+    type: String,
+    enum: ['Football', 'Tennis', 'Basketball', 'Paddle', 'Volleyball', 'Squash', 'Badminton'],
+    default: null
+  },
   bookingId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Booking',
@@ -79,12 +89,11 @@ const MatchSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Indexes for performance
-MatchSchema.index({ bookingId: 1 });
+// Indexes (bookingId and inviteCode already indexed via unique:true/sparse)
 MatchSchema.index({ organizerId: 1 });
 MatchSchema.index({ matchStatus: 1 });
-MatchSchema.index({ inviteCode: 1 });
 MatchSchema.index({ matchType: 1, matchStatus: 1 });
+MatchSchema.index({ tournamentId: 1 });
 
 // Generate invite code for private matches
 MatchSchema.pre('save', function(next) {

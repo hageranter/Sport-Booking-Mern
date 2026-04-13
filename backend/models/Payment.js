@@ -73,12 +73,11 @@ const PaymentSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Indexes for performance
+// Indexes (transactionId already indexed via unique:true sparse)
 PaymentSchema.index({ bookingId: 1 });
 PaymentSchema.index({ userId: 1 });
 PaymentSchema.index({ status: 1 });
 PaymentSchema.index({ stripePaymentIntentId: 1 });
-PaymentSchema.index({ transactionId: 1 });
 
 // Generate transaction ID before saving
 PaymentSchema.pre('save', function(next) {

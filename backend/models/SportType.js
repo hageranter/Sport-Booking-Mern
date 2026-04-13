@@ -5,7 +5,7 @@ const SportTypeSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Sport type name is required'],
     unique: true,
-    enum: ['Football', 'Tennis', 'Basketball', 'Paddle']
+    enum: ['Football', 'Tennis', 'Basketball', 'Paddle', 'Volleyball', 'Squash', 'Badminton']
   },
   nameAr: {
     type: String,
@@ -39,7 +39,7 @@ const SportTypeSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Index
-SportTypeSchema.index({ name: 1 });
+// Index (name already indexed via unique:true)
+SportTypeSchema.index({ isActive: 1 });
 
 module.exports = mongoose.model('SportType', SportTypeSchema);

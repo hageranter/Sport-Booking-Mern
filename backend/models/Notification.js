@@ -13,7 +13,7 @@ const NotificationSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    enum: ['Booking', 'Match', 'Payment', 'Review', 'System', 'Promotion'],
+    enum: ['Booking', 'Match', 'Payment', 'Review', 'System', 'Promotion', 'Tournament', 'Support'],
     required: [true, 'Category is required']
   },
   title: {
@@ -42,7 +42,7 @@ const NotificationSchema = new mongoose.Schema({
   },
   relatedModel: {
     type: String,
-    enum: ['Booking', 'Match', 'Payment', 'Review', 'Court', null],
+    enum: ['Booking', 'Match', 'Payment', 'Review', 'Court', 'Tournament', 'SupportTicket', null],
     default: null
   },
   actionUrl: {
