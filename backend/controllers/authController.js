@@ -12,8 +12,8 @@ exports.register = async (req, res) => {
     const { email, password, fullName, phoneNumber, role } = req.body;
 
     // Check if user already exists
-    const existingUser = await User.findOne({ 
-      $or: [{ email }, { phoneNumber }] 
+    const existingUser = await User.findOne({
+      $or: [{ email }, { phoneNumber }]
     });
 
     if (existingUser) {
@@ -318,10 +318,10 @@ exports.resetPassword = async (req, res) => {
     user.passwordHash = password; // Will be hashed by pre-save hook
     user.passwordResetToken = null;
     user.passwordResetExpires = null;
-    
+
     // Clear all refresh tokens (force logout everywhere)
     user.refreshTokens = [];
-    
+
     await user.save();
 
     res.status(200).json({
@@ -333,6 +333,164 @@ exports.resetPassword = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error resetting password'
+    });
+  }
+};
+
+/**
+ * @route   POST /api/auth/google
+ * @desc    Login or register user with Google
+ * @access  Public
+ */
+exports.googleLogin = async (req, res) => {
+  try {
+    const { tokenId } = req.body;
+
+    if (!tokenId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Google token is required'
+      });
+    }
+
+    // Verify token using google-auth-library
+    const { OAuth2Client } = require('google-auth-library');
+    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+    let payload;
+    try {
+      const ticket = await client.verifyIdToken({
+        idToken: tokenId,
+        audience: process.env.GOOGLE_CLIENT_ID
+      });
+      payload = ticket.getPayload();
+    } catch (error) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid Google token'
+      });
+    }
+
+    const { email, name, picture, sub: googleId } = payload;
+
+    // Check if user exists by googleId
+    let user = await User.findOne({ googleId });
+
+    if (user) {
+      // User exists, generate tokens
+      if (!user.isActive) {
+        return res.status(403).json({
+          success: false,
+          message: 'Your account has been deactivated'
+        });
+      }
+
+      const { accessToken, refreshToken } = generateTokens(user);
+      const expiresIn = 7; // days
+      await user.addRefreshToken(refreshToken, expiresIn);
+
+      user.lastLogin = new Date();
+      await user.save();
+
+      return res.status(200).json({
+        success: true,
+        message: 'Login successful',
+        data: {
+          user: {
+            id: user._id,
+            email: user.email,
+            fullName: user.fullName,
+            profilePicture: user.profilePicture,
+            role: user.role,
+            language: user.language,
+            lastLogin: user.lastLogin
+          },
+          accessToken,
+          refreshToken
+        }
+      });
+    }
+
+    // Check if user exists by email
+    user = await User.findOne({ email });
+
+    if (user) {
+      // User exists with email-based login
+      // Link Google account to existing user
+      user.googleId = googleId;
+      user.googleEmail = email;
+      user.socialLoginProvider = 'google';
+
+      const { accessToken, refreshToken } = generateTokens(user);
+      const expiresIn = 7;
+      await user.addRefreshToken(refreshToken, expiresIn);
+
+      user.lastLogin = new Date();
+      await user.save();
+
+      return res.status(200).json({
+        success: true,
+        message: 'Login successful',
+        data: {
+          user: {
+            id: user._id,
+            email: user.email,
+            fullName: user.fullName,
+            profilePicture: user.profilePicture,
+            role: user.role,
+            language: user.language,
+            lastLogin: user.lastLogin
+          },
+          accessToken,
+          refreshToken
+        }
+      });
+    }
+
+    // Create new user from Google account
+    const newUser = new User({
+      email,
+      fullName: name,
+      googleId,
+      googleEmail: email,
+      profilePicture: picture,
+      phoneNumber: email.split('@')[0], // Temporary phone number from email
+      passwordHash: null, // No password for Google users
+      isEmailVerified: true, // Google verified email
+      socialLoginProvider: 'google'
+    });
+
+    await newUser.save();
+
+    const { accessToken, refreshToken } = generateTokens(newUser);
+    const expiresIn = 7;
+    await newUser.addRefreshToken(refreshToken, expiresIn);
+
+    newUser.lastLogin = new Date();
+    await newUser.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Account created and logged in successfully',
+      data: {
+        user: {
+          id: newUser._id,
+          email: newUser.email,
+          fullName: newUser.fullName,
+          profilePicture: newUser.profilePicture,
+          role: newUser.role,
+          language: newUser.language,
+          lastLogin: newUser.lastLogin
+        },
+        accessToken,
+        refreshToken
+      }
+    });
+  } catch (error) {
+    console.error('Google login error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Error during Google login'
     });
   }
 };
@@ -372,3 +530,5 @@ exports.getMe = async (req, res) => {
     });
   }
 };
+
+

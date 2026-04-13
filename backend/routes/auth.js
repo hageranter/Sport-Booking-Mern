@@ -106,6 +106,41 @@ router.post('/forgot-password', forgotPasswordValidation, validate, authControll
 router.post('/reset-password', resetPasswordValidation, validate, authController.resetPassword);
 
 /**
+ * @route   POST /api/auth/google
+ * @desc    Login or register user with Google
+ * @access  Public
+ */
+/**
+ * @openapi
+ * /api/auth/google:
+ *   post:
+ *     tags:
+ *       - Auth
+ *     summary: Login or register with Google
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               tokenId:
+ *                 type: string
+ *                 description: Google ID token from frontend
+ *             required: [tokenId]
+ *     responses:
+ *       '200':
+ *         description: Login successful
+ *       '201':
+ *         description: User created and logged in
+ *       '401':
+ *         description: Invalid token
+ *       '500':
+ *         description: Server error
+ */
+router.post('/google', authController.googleLogin);
+
+/**
  * @route   GET /api/auth/me
  * @desc    Get current user profile
  * @access  Private

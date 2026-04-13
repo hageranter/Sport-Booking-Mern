@@ -79,6 +79,7 @@ app.use('/api/courts', require('./routes/courts'));
 app.use('/api/bookings', require('./routes/bookings'));
 app.use('/api/sport-types', require('./routes/sportTypes'));
 app.use('/api/matches', require('./routes/matches'));
+app.use('/api/tournaments', require('./routes/tournaments'));
 app.use('/api/payments', require('./routes/payments'));
 
 app.use('/api/notifications', require('./routes/notifications'));
