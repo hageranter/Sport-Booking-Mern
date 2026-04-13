@@ -15,5 +15,6 @@ module.exports = {
   Notification: require('./Notification'),
   NotificationSettings: require('./NotificationSettings'),
   SupportTicket: require('./SupportTicket'),
-  SearchHistory: require('./SearchHistory')
+  SearchHistory: require('./SearchHistory'),
+  Owner: require('./Owner')
 };

@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
 const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/database');
 const config = require('./config/config');
@@ -31,6 +33,32 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Swagger setup
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Sports Booking API',
+      version: '1.0.0',
+      description: 'API documentation for the Sports Booking backend'
+    },
+    servers: [{ url: `http://localhost:${config.PORT}` }],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT'
+        }
+      }
+    }
+  },
+  apis: ['./routes/*.js', './controllers/*.js']
+};
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 // Static Files
 app.use('/uploads', express.static('uploads'));
 
@@ -45,12 +73,15 @@ app.get('/health', (req, res) => {
 
 // API Routes (will be added)
 app.use('/api/auth', require('./routes/auth'));
-// app.use('/api/users', require('./routes/users'));
-// app.use('/api/courts', require('./routes/courts'));
-// app.use('/api/bookings', require('./routes/bookings'));
-// app.use('/api/matches', require('./routes/matches'));
-// app.use('/api/notifications', require('./routes/notifications'));
-// app.use('/api/payments', require('./routes/payments'));
+app.use('/api/users', require('./routes/users'));
+app.use('/api/owners', require('./routes/owners'));
+app.use('/api/courts', require('./routes/courts'));
+app.use('/api/bookings', require('./routes/bookings'));
+app.use('/api/sport-types', require('./routes/sportTypes'));
+app.use('/api/matches', require('./routes/matches'));
+app.use('/api/payments', require('./routes/payments'));
+
+app.use('/api/notifications', require('./routes/notifications'));
 // app.use('/api/reviews', require('./routes/reviews'));
 
 // 404 Handler
@@ -81,10 +112,11 @@ const server = app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT} in ${config.NODE_ENV} mode`);
 });
 
-// WebSocket Setup (will be configured later)
-// const WebSocket = require('ws');
-// const wss = new WebSocket.Server({ server });
-// require('./config/websocket')(wss);
+// ===== WebSocket Setup =====
+// using `ws` package and a separate config module for real-time notifications
+const WebSocket = require('ws');
+const wss = new WebSocket.Server({ server });
+require('./config/websocket')(wss);
 
 // Graceful Shutdown
 process.on('SIGTERM', () => {
